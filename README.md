@@ -173,7 +173,6 @@ webcast/
 │   └── static/              # Frontend (vanilla JS, no build step)
 ├── docs/                    # GitHub Pages (homepage, privacy policy)
 ├── setup.sh                 # Installation script
-├── migrate_tokens.py        # Token migration from old app
 └── .env.example             # Configuration template
 ```
 
