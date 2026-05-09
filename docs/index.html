@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcast — Church Live Streaming Control Panel</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 40px auto; padding: 0 24px; color: #333; line-height: 1.6; }
+        h1 { color: #1a1a1a; border-bottom: 2px solid #eee; padding-bottom: 12px; }
+        h2 { color: #333; margin-top: 32px; }
+        .badge { display: inline-block; background: #1a73e8; color: white; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; margin-left: 8px; vertical-align: middle; }
+        ul { padding-left: 20px; }
+        a { color: #0066cc; }
+        .note { background: #f8f9fa; border-left: 4px solid #1a73e8; padding: 12px 16px; margin: 24px 0; border-radius: 0 4px 4px 0; }
+        footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #eee; color: #999; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>Webcast <span class="badge">Internal Tool</span></h1>
+    <p>Webcast is a self-hosted live streaming control panel used internally by a single church organization to automate YouTube Live broadcasts of Sunday meetings.</p>
+
+    <h2>What it does</h2>
+    <ul>
+        <li>Schedules and automatically starts YouTube Live broadcasts at configured times</li>
+        <li>Controls a PTZ camera via a web-based control panel</li>
+        <li>Monitors stream health and handles recovery from failures</li>
+        <li>Sends attendance summary emails after each broadcast</li>
+        <li>Manages recurring weekly schedules and one-off events</li>
+    </ul>
+
+    <h2>YouTube API usage</h2>
+    <p>Webcast uses the YouTube Data API v3 to create and manage live broadcasts on behalf of the church's YouTube channels. OAuth authorization is performed once per channel and refresh tokens are stored locally on the church's own server. No data is shared with any third party.</p>
+
+    <div class="note">
+        <strong>Internal use only.</strong> This application is not available to the public and has no external users. It is operated exclusively by volunteer administrators within a single church organization.
+    </div>
+
+    <h2>Source code</h2>
+    <p>Webcast is open source. <a href="https://github.com/evanalexander-dev/webcast">View the source code on GitHub.</a></p>
+
+    <h2>Privacy</h2>
+    <p><a href="privacy.html">Privacy Policy</a></p>
+
+    <footer>
+        <p>Webcast — Internal church live streaming tool</p>
+    </footer>
+</body>
+</html>

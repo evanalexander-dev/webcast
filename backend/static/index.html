@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcast</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Webcast</h1>
+                <span style="font-size:0.75em;color:var(--text-muted);margin-left:10px;align-self:center;">v1.4.7</span>
+            </div>
+            <div class="header-right">
+                <span id="userDisplay"></span>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs (Admin and Specialist) -->
+        <nav class="tabs admin-or-specialist" style="display:none;">
+            <button class="tab active" data-tab="control">Control</button>
+            <button class="tab" data-tab="schedule">Schedule</button>
+            <button class="tab admin-only-tab" data-tab="youtube">YouTube</button>
+            <button class="tab" data-tab="settings">Settings</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Control Tab -->
+            <section id="control-tab" class="tab-content active">
+                <div class="control-layout">
+                    <!-- Stream Status -->
+                    <div class="card stream-status-card">
+                        <h2>Stream Status</h2>
+                        
+                        <div id="streamDetails" class="stream-details" style="display:none;">
+                            <p id="streamTitle" class="stream-title"></p>
+                            <p class="stream-url">
+                                <a id="youtubeLinkUrl" href="#" target="_blank"></a>
+                            </p>
+                        </div>
+                        
+                        <div id="streamStatus" class="status-display">
+                            <div class="status-indicator" id="statusIndicator">
+                                <span class="status-dot"></span>
+                                <span class="status-text">Loading...</span>
+                            </div>
+                            <div id="streamInfo" class="stream-info"></div>
+                        </div>
+                        
+                        <div class="stream-controls">
+                            <button id="pauseBtn" class="btn btn-warning btn-large" disabled>
+                                ⏸ Pause for Sacrament
+                            </button>
+                            <button id="resumeBtn" class="btn btn-success btn-large" disabled style="display:none;">
+                                ▶ Resume Stream
+                            </button>
+                        </div>
+                        
+                        <div id="manualControls" class="admin-controls admin-only">
+                            <h3>Manual Control</h3>
+                            <div class="manual-start-form">
+                                <div class="form-row">
+                                    <select id="wardSelect" class="form-control">
+                                        <option value="">Select Ward...</option>
+                                    </select>
+                                    <select id="privacySelect" class="form-control">
+                                        <option value="unlisted">Unlisted</option>
+                                        <option value="public">Public</option>
+                                        <option value="private">Private</option>
+                                    </select>
+                                </div>
+                                <div class="form-row">
+                                    <input type="text" id="manualTitle" class="form-control" placeholder="Broadcast title (optional)">
+                                </div>
+                                <div class="form-row">
+                                    <button id="startStreamBtn" class="btn btn-success">Start Stream</button>
+                                    <button id="stopStreamBtn" class="btn btn-danger" disabled>Stop Stream</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Presets (Everyone can use) -->
+                    <div class="card presets-card">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <h2>Camera Presets</h2>
+                            <button id="editPresetsToggle" class="btn btn-sm btn-secondary admin-only" onclick="togglePresetEditMode()">Edit Presets</button>
+                        </div>
+                        <div id="presetList" class="preset-list">
+                            <!-- Populated by JS -->
+                        </div>
+                        
+                        <div class="admin-only" id="addPresetPanel" style="margin-top: 20px; display:none;">
+                            <h3>Add Preset</h3>
+                            <form id="addPresetForm" class="schedule-form">
+                                <div class="form-row">
+                                    <input type="text" id="presetName" class="form-control" placeholder="Preset Name" required style="flex:2;min-width:0;">
+                                    <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:0.9em;">
+                                        <input type="checkbox" id="presetIsDefault"> Default
+                                    </label>
+                                </div>
+                                <div class="form-row" style="margin-top:8px;gap:6px;">
+                                    <label class="form-label" style="white-space:nowrap;font-size:0.85em;">Pan</label>
+                                    <input type="number" id="presetPan" class="form-control" value="0" required style="width:100px;min-width:0;">
+                                    <label class="form-label" style="white-space:nowrap;font-size:0.85em;">Tilt</label>
+                                    <input type="number" id="presetTilt" class="form-control" value="0" required style="width:100px;min-width:0;">
+                                    <label class="form-label" style="white-space:nowrap;font-size:0.85em;">Zoom</label>
+                                    <input type="number" id="presetZoom" class="form-control" value="0" required style="width:100px;min-width:0;">
+                                </div>
+                                <div class="form-row" style="margin-top:8px;gap:6px;">
+                                    <label class="form-label" style="white-space:nowrap;font-size:0.85em;">Pan Spd <span style="color:var(--text-muted);">(1-24)</span></label>
+                                    <input type="number" id="presetPanSpeed" class="form-control" value="12" min="1" max="24" required style="width:60px;min-width:0;">
+                                    <label class="form-label" style="white-space:nowrap;font-size:0.85em;">Tilt Spd <span style="color:var(--text-muted);">(1-20)</span></label>
+                                    <input type="number" id="presetTiltSpeed" class="form-control" value="10" min="1" max="20" required style="width:60px;min-width:0;">
+                                    <label class="form-label" style="white-space:nowrap;font-size:0.85em;">Zoom Spd <span style="color:var(--text-muted);">(1-7)</span></label>
+                                    <input type="number" id="presetZoomSpeed" class="form-control" value="4" min="1" max="7" required style="width:60px;min-width:0;">
+                                </div>
+                                <div class="form-row" style="margin-top:8px;">
+                                    <button type="button" class="btn btn-secondary" onclick="testPresetForm()">Test</button>
+                                    <button type="submit" id="presetSubmitBtn" class="btn btn-primary">Save Preset</button>
+                                    <button type="button" id="presetCancelBtn" class="btn btn-secondary" onclick="cancelEditPreset()" style="display:none;">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Live Preview -->
+                    <div class="card preview-card">
+                        <h2>Live Preview</h2>
+                        <div id="videoContainer" class="video-container">
+                            <div class="video-placeholder">
+                                <p>Camera preview loading...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PTZ Controls (Admin only) -->
+                    <div class="card">
+                        <h2>Camera Controls</h2>
+                        <div class="ptz-layout">
+                            <div class="ptz-main">
+                                <div class="ptz-grid">
+                                    <button class="ptz-btn" data-direction="leftup">↖</button>
+                                    <button class="ptz-btn" data-direction="up">↑</button>
+                                    <button class="ptz-btn" data-direction="rightup">↗</button>
+                                    <button class="ptz-btn" data-direction="left">←</button>
+                                    <button class="ptz-btn ptz-home" id="homeBtn">⌂</button>
+                                    <button class="ptz-btn" data-direction="right">→</button>
+                                    <button class="ptz-btn" data-direction="leftdown">↙</button>
+                                    <button class="ptz-btn" data-direction="down">↓</button>
+                                    <button class="ptz-btn" data-direction="rightdown">↘</button>
+                                </div>
+                                <div class="zoom-controls">
+                                    <button class="zoom-btn" data-zoom="zoomin">+</button>
+                                    <span>Zoom</span>
+                                    <button class="zoom-btn" data-zoom="zoomout">−</button>
+                                </div>
+                            </div>
+                            <div class="ptz-speed">
+                                <div class="speed-control">
+                                    <label>Pan/Tilt</label>
+                                    <input type="range" id="ptzSpeed" min="1" max="20" value="10">
+                                    <span id="ptzSpeedValue">10</span>
+                                </div>
+                                <div class="speed-control">
+                                    <label>Zoom</label>
+                                    <input type="range" id="zoomSpeed" min="1" max="7" value="4">
+                                    <span id="zoomSpeedValue">4</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="cameraStatus" class="camera-status">
+                            <p>Checking connection...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Schedule Tab (Admin) -->
+            <section id="schedule-tab" class="tab-content">
+                <div class="schedule-layout">
+                    <div class="card">
+                        <h2>Weekly Schedule</h2>
+                        <div id="scheduleList" class="schedule-list">
+                            <!-- Populated by JS -->
+                        </div>
+                        
+                        <h3 style="margin-top: 20px;">Add Recurring Schedule</h3>
+                        <form id="addScheduleForm" class="schedule-form">
+                            <div class="form-row">
+                                <select id="scheduleWard" class="form-control" required>
+                                    <option value="">Select Ward...</option>
+                                </select>
+                                <select id="scheduleDay" class="form-control" required>
+                                    <option value="6">Sunday</option>
+                                    <option value="0">Monday</option>
+                                    <option value="1">Tuesday</option>
+                                    <option value="2">Wednesday</option>
+                                    <option value="3">Thursday</option>
+                                    <option value="4">Friday</option>
+                                    <option value="5">Saturday</option>
+                                </select>
+                                <input type="time" id="scheduleTime" class="form-control" value="09:00" required>
+                                <input type="number" id="scheduleDuration" class="form-control" value="60" min="30" max="180" placeholder="Duration" required>
+                            </div>
+                            <div class="form-row" style="margin-top: 10px;">
+                                <input type="text" id="scheduleBroadcastTitle" class="form-control" placeholder="YouTube title (e.g., Peak View Ward Sacrament Meeting)" required style="flex: 2;">
+                                <button type="submit" class="btn btn-primary">Add Schedule</button>
+                            </div>
+                        </form>
+                        
+                        <h3 style="margin-top: 20px;">Add One-Off Event</h3>
+                        <p class="help-text">For funerals, special broadcasts, etc.</p>
+                        <form id="addOneOffForm" class="schedule-form">
+                            <div class="form-row">
+                                <select id="oneOffWard" class="form-control" required>
+                                    <option value="">Select Ward...</option>
+                                </select>
+                                <input type="date" id="oneOffDate" class="form-control" required>
+                                <input type="time" id="oneOffTime" class="form-control" value="09:00" required>
+                                <input type="number" id="oneOffDuration" class="form-control" value="60" min="30" max="180" placeholder="Duration" required>
+                            </div>
+                            <div class="form-row" style="margin-top: 10px;">
+                                <input type="text" id="oneOffTitle" class="form-control" placeholder="Event title (e.g., John Doe Funeral)" required style="flex: 2;">
+                                <button type="submit" class="btn btn-primary">Add Event</button>
+                            </div>
+                            <div class="form-row" style="margin-top: 10px; align-items: center; gap: 10px;">
+                                <label style="white-space: nowrap; color: var(--text-muted); font-size: 0.9em;">YouTube Thumbnail (optional):</label>
+                                <input type="file" id="oneOffThumbnail" class="form-control" accept="image/jpeg,image/png" style="flex: 1;">
+                                <span class="help-text" style="margin: 0; white-space: nowrap;">JPEG or PNG, 1280×720 recommended, max 2 MB</span>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>Schedule Exceptions</h2>
+                        <p class="help-text">Skip streaming on specific dates</p>
+                        <div id="exceptionsList">
+                            <!-- Populated by JS -->
+                        </div>
+                        <form id="addExceptionForm" class="form-row" style="margin-top: 15px;">
+                            <select id="exceptionSchedule" class="form-control" required>
+                                <option value="">Select Schedule...</option>
+                            </select>
+                            <input type="date" id="exceptionDate" class="form-control" required>
+                            <input type="text" id="exceptionReason" class="form-control" placeholder="Reason (optional)">
+                            <button type="submit" class="btn btn-primary">Add Exception</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- YouTube Tab (Admin) -->
+            <section id="youtube-tab" class="tab-content">
+                <div class="youtube-layout">
+                    <div class="card">
+                        <h2>YouTube Channel Connections</h2>
+                        <p class="help-text">Connect each ward to its YouTube channel for streaming</p>
+                        <div id="youtubeStatus" class="youtube-status-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="card" id="authFlowCard" style="display: none;">
+                        <h2>Connect YouTube Channel</h2>
+                        <div id="authFlow">
+                            <ol>
+                                <li>Go to: <a id="authUrl" href="#" target="_blank"></a></li>
+                                <li>Enter this code:</li>
+                            </ol>
+                            <div class="auth-code-container">
+                                <code id="authCode" class="auth-code"></code>
+                            </div>
+                            <ol start="3">
+                                <li>Authorize access to your YouTube channel</li>
+                            </ol>
+                            <p id="authStatus" class="auth-status">Waiting...</p>
+                            <button id="cancelAuthBtn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Tab (Admin) -->
+            <section id="settings-tab" class="tab-content">
+                <div class="settings-layout">
+                    <!-- Specialist-only: just their ward's email addresses -->
+                    <div class="card" id="specialistWardEmailCard" style="display:none;">
+                        <h2>Ward Email Addresses</h2>
+                        <p class="help-text">Email addresses that receive attendance reports for your ward.</p>
+                        <div class="form-row" style="margin-top:10px;">
+                            <input type="text" id="specialistWardEmails" class="form-control" placeholder="Email addresses (comma separated)" style="flex:2;">
+                            <button class="btn btn-primary" onclick="saveSpecialistWardEmails()">Save</button>
+                        </div>
+                    </div>
+
+                    <!-- Admin-only cards below -->
+                    <div id="adminOnlySettings">
+                    <div class="card">
+                        <h2>Wards</h2>
+                        <div id="wardsList" class="wards-list">
+                            <!-- Populated by JS -->
+                        </div>
+                        <form id="addWardForm" class="form-row" style="margin-top: 15px;">
+                            <input type="text" id="newWardName" placeholder="Ward Name" required style="width:20ch;flex:none;">
+                            <input type="text" id="newWardEmails" placeholder="Email addresses (comma separated)" style="flex:1;min-width:0;">
+                            <button type="submit" class="btn btn-primary">Add Ward</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>Users</h2>
+                        <div id="usersList" class="users-list">
+                            <!-- Populated by JS -->
+                        </div>
+                        <form id="addUserForm" class="form-row" style="margin-top: 15px; flex-wrap:wrap; gap:8px;">
+                            <input type="text" id="newUsername" placeholder="Username" required>
+                            <input type="password" id="newPassword" placeholder="Password" required>
+                            <label><input type="checkbox" id="newUserAdmin"> Admin</label>
+                            <label><input type="checkbox" id="newUserSpecialist"> Specialist</label>
+                            <select id="newUserWard" class="form-control" style="display:none;">
+                                <option value="">Select Ward...</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">Add User</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>Test Email</h2>
+                        <p class="help-text">Verify SMTP configuration</p>
+                        <form id="testEmailForm" class="form-row">
+                            <input type="email" id="testEmailAddress" placeholder="Email Address" required>
+                            <button type="submit" class="btn btn-primary">Send Test Email</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>Run Cleanup Now</h2>
+                        <p class="help-text">Manually trigger the 1 AM routine — fetches final view counts, deletes recordings from YouTube, sends attendance emails, and creates next week's broadcasts.</p>
+                        <button id="runCleanupBtn" class="btn btn-warning">Run Cleanup</button>
+                    </div>
+
+                    <div class="card">
+                        <h2>System Settings</h2>
+                        <div class="form-row" style="align-items: center; gap: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="testingModeToggle">
+                                <span>Testing Mode</span>
+                            </label>
+                            <span class="help-text" style="margin: 0;">When enabled, all scheduled broadcasts will be created as <strong>Unlisted</strong> instead of Public.</span>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <button id="saveSystemSettings" class="btn btn-primary">Save Settings</button>
+                        </div>
+                    </div>
+                    </div><!-- end adminOnlySettings -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Toast Container -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
